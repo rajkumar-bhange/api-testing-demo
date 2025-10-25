@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+    
+    environment {
+        NODE_VERSION = '18'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm ci'
+                sh 'npx playwright install'
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                sh 'npm test'
+            }
+        }
+        
+        stage('Generate Report') {
+            steps {
+                sh 'npm run test:generate-report'
+            }
+        }
+    }
+    
+    post {
+        always {
+            allure([
+                includeProperties: false,
+                jdk: '',
+                properties: [],
+                reportBuildPolicy: 'ALWAYS',
+                results: [[path: 'allure-results']]
+            ])
+            
+            publishHTML([
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                reportName: 'Playwright Report'
+            ])
+        }
+        
+        success {
+            echo 'Build successful!'
+        }
+        
+        failure {
+            echo 'Build failed!'
+        }
+    }
+}

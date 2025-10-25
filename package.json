@@ -10,8 +10,12 @@
     "test:ui": "playwright test --ui",
     "test:report": "allure serve allure-results",
     "test:generate-report": "allure generate allure-results --clean -o allure-report",
+    "test:jenkins": "playwright test --reporter=html,allure-playwright",
+    "test:ci": "playwright test --reporter=allure-playwright",
     "install:allure": "npm install -g allure-commandline",
-    "setup": "playwright install"
+    "setup": "playwright install",
+    "jenkins:setup": "npm ci && npx playwright install --with-deps",
+    "jenkins:test": "npm run test:ci && npm run test:generate-report"
   },
   "keywords": [
     "api-testing",
